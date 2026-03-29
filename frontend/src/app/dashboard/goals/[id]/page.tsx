@@ -90,8 +90,8 @@ export default function GoalDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [expandedPhases, setExpandedPhases] = useState<Record<string, boolean>>({})
 
-  // Researching-layout state
-  const [researchExpanded, setResearchExpanded] = useState(false)
+  // Active-layout research record state
+  const [researchRecordExpanded, setResearchRecordExpanded] = useState(false)
   const [showDecisionModal, setShowDecisionModal] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [modalQuestion, setModalQuestion] = useState<Question | null>(null)
@@ -250,7 +250,9 @@ export default function GoalDetailPage() {
   if (error) return <p className="text-red-600">Error: {error}</p>
   if (!goal) return null
 
-  const recentDecisions = [...decisions].reverse().slice(0, 3)
+  const recentDecisions = [...decisions]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 3)
 
   function bulletRanges(total: number) {
     return [
@@ -554,38 +556,6 @@ export default function GoalDetailPage() {
         </button>
       </div>
 
-      {/* ── Collapsible research questions (read-only record) ── */}
-      {questions.length > 0 && (
-        <div className="rounded-lg border border-gray-100">
-          <button
-            onClick={() => setResearchExpanded((v) => !v)}
-            className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
-          >
-            <span>
-              Research questions ({resolvedCount} of {totalQCount} resolved)
-            </span>
-            <span className="text-gray-400 text-xs">{researchExpanded ? '▾' : '▸'}</span>
-          </button>
-          {researchExpanded && (
-            <div className="border-t border-gray-100 px-4 py-3 flex flex-col gap-2">
-              {questions
-                .slice()
-                .sort((a, b) => a.question_order - b.question_order)
-                .map((q) => (
-                  <div key={q.id} className="flex flex-col gap-0.5">
-                    <p className={`text-sm ${q.is_resolved ? 'line-through text-gray-400' : 'text-gray-700'}`}>
-                      {q.question}
-                    </p>
-                    {q.answer && (
-                      <p className="text-xs italic text-gray-400 ml-0">{q.answer}</p>
-                    )}
-                  </div>
-                ))}
-            </div>
-          )}
-        </div>
-      )}
-
       {/* ── Bullet graphs ── */}
       <div className="rounded-lg border border-gray-200 bg-white p-4 flex flex-col gap-4">
         {totalMilestones === 0 ? (
@@ -683,6 +653,44 @@ export default function GoalDetailPage() {
 
       {/* ── Recent decisions ── */}
       {RecentDecisionsSection}
+
+      {/* ── Research questions record ── */}
+      {questions.filter((q) => q.is_resolved).length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+              Research questions
+            </p>
+            <button
+              onClick={() => setResearchRecordExpanded((v) => !v)}
+              className="text-xs text-blue-600 hover:text-blue-800 transition-colors"
+            >
+              {researchRecordExpanded ? 'Hide' : 'Show'}
+            </button>
+          </div>
+          {researchRecordExpanded && (
+            <ol className="flex flex-col gap-4 list-decimal list-inside marker:text-gray-400 marker:text-sm">
+              {questions
+                .filter((q) => q.is_resolved)
+                .slice()
+                .sort((a, b) => a.question_order - b.question_order)
+                .map((q) => (
+                  <li key={q.id} className="flex flex-col gap-1">
+                    <div className="flex items-start justify-between gap-3">
+                      <span className="text-sm text-gray-800">{q.question}</span>
+                      <span className="shrink-0 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                        Resolved
+                      </span>
+                    </div>
+                    {q.answer && (
+                      <p className="text-sm text-gray-500 ml-4">A: {q.answer}</p>
+                    )}
+                  </li>
+                ))}
+            </ol>
+          )}
+        </div>
+      )}
 
       {/* ── LogDecisionModal ── */}
       {showDecisionModal && (

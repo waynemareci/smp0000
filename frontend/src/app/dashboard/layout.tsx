@@ -7,9 +7,9 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-56 flex flex-col justify-between bg-gray-900 text-white px-4 py-6 shrink-0">
+      <aside className="w-56 h-screen shrink-0 flex flex-col justify-between bg-gray-900 text-white px-4 py-6 overflow-y-auto">
         <div>
           <p className="text-xl font-bold mb-8">SMP</p>
           <nav className="flex flex-col gap-1">
@@ -39,7 +39,7 @@ export default function DashboardLayout({
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 bg-gray-50 p-8 overflow-auto">
+      <main className="flex-1 overflow-y-auto bg-gray-50 p-8">
         {children}
       </main>
     </div>

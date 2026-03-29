@@ -31,20 +31,32 @@ dogfood use case — the SMP manages its own development from Day 0.
 - All tables have: id (uuid), created_at, updated_at (auto-trigger)
 - Decisions and ai_prompt_log are append-only (no updates, no deletes)
 
-### Current phase: Phase 3 — Redesigned goal workflow (active)
+### Current phase: Phase 4 — TBD
+
+### Phase 3 — Redesigned goal workflow (complete)
 
 Completed when:
-- [ ] goal_questions table created in Supabase
-- [ ] Goals status enum includes 'researching' (new default)
-- [ ] POST /api/goals/{id}/questions — CRUD endpoints live
-- [ ] New goal wizard: Step 3 generates research questions only (no phases)
-- [ ] Goal detail page: dual-status layout (researching vs active)
-- [ ] LogAnswerModal: inline answer + optional decision record
-- [ ] /dashboard/goals/[id]/define: Session 2 roadmap definition page
-- [ ] POST /api/ai/decompose supports three modes: questions_only,
+- [x] goal_questions table created in Supabase
+- [x] Goals status enum includes 'researching' (new default)
+- [x] POST /api/goals/{id}/questions — CRUD endpoints live
+- [x] New goal wizard: Step 3 generates research questions only (no phases)
+- [x] Goal detail page: dual-status layout (researching vs active)
+- [x] LogAnswerModal: inline answer + optional decision record
+- [x] /dashboard/goals/[id]/define: Session 2 roadmap definition page
+- [x] POST /api/ai/decompose supports three modes: questions_only,
       phases_only (with Q&A context), full (legacy)
-- [ ] LogDecisionModal wired into active goal detail page
-- [ ] Sidebar nav updated: Goals, Decisions, AI log
+- [x] LogDecisionModal wired into active goal detail page
+- [x] Sidebar nav updated: Goals, Decisions, AI log
+
+Phase 3 completed: 2026-03-29
+Smoke test passed. Issues found and resolved during testing:
+- Print view: switched to visibility:hidden inversion approach
+- View all decisions: was reloading goal page, now routes correctly
+- Decision display: answer text now shown as primary content
+- Recent Decisions: fixed sort order (newest-first before slice)
+- Sidebar: fixed with h-screen overflow-hidden layout
+- LogAnswerModal: decisions now prepend to Recent Decisions on save
+- Active layout: read-only research questions section added
 
 ### Key decisions logged
 1. Parallel build: SMP and trading agent built simultaneously from Day 0
@@ -82,6 +94,14 @@ Completed when:
     text on the question record (PATCH goal_questions) and optionally
     as a decision record (POST decisions). Both happen in one modal
     action (LogAnswerModal).
+19. Research portal deferred to post-MVP: AI chat scoped to research
+    questions, web search integration, per-question source attachments.
+    Logged as decision record in SMP. Warrants its own design phase.
+20. Print view uses visibility:hidden/visible inversion — the only
+    reliable way to isolate a single div for printing while hiding
+    all other page content.
+21. Share questions uses navigator.clipboard.writeText with mailto:
+    fallback — avoids dependency on a configured mail client.
 
 ### Architecture: two-session goal workflow
 
@@ -129,3 +149,8 @@ Active tracking — goal detail page (/dashboard/goals/[id]):
   Components:
     LogAnswerModal             — answer input + optional decision log
     LogDecisionModal           — general decision logging (active goals)
+
+### Known items before production deployment
+- /api/seed has no authentication — lock down before public deploy
+- /health reports "phase":"0" — update to current phase
+- Duplicate seed goals in database — clean up before Vercel deploy
