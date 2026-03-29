@@ -7,6 +7,7 @@ import { apiFetch } from '@/lib/api'
 export interface SavedDecision {
   id: string
   title: string
+  decision_made: string
   created_at: string
 }
 

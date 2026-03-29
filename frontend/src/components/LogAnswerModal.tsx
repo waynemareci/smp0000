@@ -15,12 +15,19 @@ export interface Question {
   updated_at: string
 }
 
+export interface AnswerDecision {
+  id: string
+  title: string
+  decision_made: string
+  created_at: string
+}
+
 interface Props {
   goalId: string
   questionId: string
   questionText: string
   onClose: () => void
-  onSaved: (updated: Question) => void
+  onSaved: (updated: Question, decision: AnswerDecision | null) => void
 }
 
 export default function LogAnswerModal({ goalId, questionId, questionText, onClose, onSaved }: Props) {
@@ -50,11 +57,12 @@ export default function LogAnswerModal({ goalId, questionId, questionText, onClo
       )
 
       // 2. Optionally log as a decision
+      let decision: AnswerDecision | null = null
       if (logAsDecision) {
-        await apiFetch(`/api/goals/${goalId}/decisions`, token, {
+        decision = await apiFetch(`/api/goals/${goalId}/decisions`, token, {
           method: 'POST',
           body: JSON.stringify({
-            title: ('Research answer: ' + questionText).slice(0, 80),
+            title: ('Research answer: ' + questionText.slice(0, 60)),
             decision_made: answer.trim(),
             context: 'Answer to research question logged during research phase.',
             options_considered: '',
@@ -62,7 +70,7 @@ export default function LogAnswerModal({ goalId, questionId, questionText, onClo
         })
       }
 
-      onSaved(updated)
+      onSaved(updated, decision)
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Failed to save answer')
       setSaving(false)

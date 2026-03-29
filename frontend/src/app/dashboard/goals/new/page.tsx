@@ -170,7 +170,7 @@ export default function NewGoalPage() {
       }
 
       // 4. Navigate to goal detail
-      router.push(`/dashboard/goals/${goalId}`)
+      router.replace(`/dashboard/goals/${goalId}`)
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Failed to save goal')
       setSaving(false)
@@ -197,6 +197,7 @@ export default function NewGoalPage() {
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                autoFocus
                 placeholder="e.g. Build a personal algorithmic trading agent"
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -241,6 +242,7 @@ export default function NewGoalPage() {
               <textarea
                 value={context}
                 onChange={(e) => setContext(e.target.value)}
+                autoFocus
                 placeholder={`What are you trying to achieve? What constraints exist?\nWhat does success look like?`}
                 rows={4}
                 style={{ minHeight: 80 }}
@@ -375,6 +377,10 @@ export default function NewGoalPage() {
             </div>
           )}
 
+          <p className="mt-3 text-sm text-gray-500">
+            When you&apos;re happy with your research questions, click Save to proceed. You&apos;ll answer them on the goal page.
+          </p>
+
           <div className="mt-6 flex gap-3">
             <button
               onClick={() => setStep(2)}
@@ -393,7 +399,7 @@ export default function NewGoalPage() {
                   <Spinner /> Saving...
                 </span>
               ) : (
-                'Save \u2192'
+                'Save and start research \u2192'
               )}
             </button>
           </div>

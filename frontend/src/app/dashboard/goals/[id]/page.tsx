@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '@clerk/nextjs'
 import { apiFetch } from '@/lib/api'
 import BulletGraph from '@/components/BulletGraph'
-import LogAnswerModal, { type Question } from '@/components/LogAnswerModal'
+import LogAnswerModal, { type Question, type AnswerDecision } from '@/components/LogAnswerModal'
 import LogDecisionModal, { type SavedDecision } from '@/components/LogDecisionModal'
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -38,6 +38,7 @@ interface Milestone {
 interface Decision {
   id: string
   title: string
+  decision_made: string
   created_at: string
 }
 
@@ -217,8 +218,11 @@ export default function GoalDetailPage() {
 
   // ── Modal saved callback ──────────────────────────────────────────────────
 
-  function handleQuestionSaved(updated: Question) {
+  function handleQuestionSaved(updated: Question, decision: AnswerDecision | null) {
     setQuestions((prev) => prev.map((q) => q.id === updated.id ? updated : q))
+    if (decision) {
+      setDecisions((prev) => [decision, ...prev])
+    }
     setModalQuestion(null)
   }
 
@@ -268,16 +272,19 @@ export default function GoalDetailPage() {
       ) : (
         <div className="flex flex-col gap-2">
           {recentDecisions.map((d) => (
-            <div key={d.id} className="flex items-start justify-between gap-2">
-              <p className="text-sm font-medium text-gray-800">{d.title}</p>
-              <p className="text-xs text-gray-400 shrink-0">
-                {new Date(d.created_at).toLocaleDateString()}
-              </p>
+            <div key={d.id} className="flex flex-col gap-0.5">
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-xs text-gray-400">{d.title}</p>
+                <p className="text-xs text-gray-400 shrink-0">
+                  {new Date(d.created_at).toLocaleDateString()}
+                </p>
+              </div>
+              <p className="text-sm text-gray-800">{d.decision_made}</p>
             </div>
           ))}
         </div>
       )}
-      <a href="#" className="mt-3 inline-block text-xs text-blue-600 hover:underline">
+      <a href="/dashboard/decisions" className="mt-3 inline-block text-xs text-blue-600 hover:underline">
         View all decisions &#x2192;
       </a>
     </div>
@@ -290,6 +297,42 @@ export default function GoalDetailPage() {
   if (goal.status === 'researching') {
     return (
       <div className="max-w-3xl mx-auto flex flex-col gap-8">
+
+        {/* ── Print styles ── */}
+        <style>{`
+          @media print {
+            body * { visibility: hidden; }
+            .print-only, .print-only * { visibility: visible; }
+            .print-only {
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              display: block !important;
+              font-family: Georgia, serif;
+              color: #000;
+            }
+          }
+        `}</style>
+
+        {/* ── Print-only content (hidden on screen) ── */}
+        <div className="print-only" style={{ display: 'none' }}>
+          <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{goal.title}</h2>
+          {goal.description && (
+            <p style={{ fontSize: '0.9rem', marginBottom: '1rem', color: '#333' }}>
+              {goal.description}
+            </p>
+          )}
+          <p style={{ fontWeight: 600, marginBottom: '0.5rem' }}>Research Questions</p>
+          <ol style={{ fontSize: '0.9rem', paddingLeft: '1.25rem' }}>
+            {questions
+              .slice()
+              .sort((a, b) => a.question_order - b.question_order)
+              .map((q, i) => (
+                <li key={i} style={{ marginBottom: '0.4rem' }}>{q.question}</li>
+              ))}
+          </ol>
+        </div>
 
         {/* ── Header ── */}
         <div className="flex flex-col gap-1">
@@ -330,6 +373,36 @@ export default function GoalDetailPage() {
             <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
               Research questions ({resolvedCount} of {totalQCount} resolved)
             </p>
+            <div className="flex gap-2 no-print">
+              <button
+                onClick={() => {
+                  const shareText = goal.title + '\n\n' +
+                    questions
+                      .slice()
+                      .sort((a, b) => a.question_order - b.question_order)
+                      .map((q, i) => `${i + 1}. ${q.question}`)
+                      .join('\n')
+                  const subject = encodeURIComponent('Research questions: ' + goal.title)
+                  const mailtoLink = `mailto:?subject=${subject}&body=${encodeURIComponent(shareText)}`
+                  navigator.clipboard.writeText(shareText).then(
+                    () => {
+                      setSuccessMessage('Questions copied to clipboard')
+                      setTimeout(() => setSuccessMessage(null), 3000)
+                    },
+                    () => { window.location.href = mailtoLink }
+                  )
+                }}
+                className="text-xs text-gray-500 hover:text-gray-800 transition-colors"
+              >
+                Share questions
+              </button>
+              <button
+                onClick={() => window.print()}
+                className="text-xs text-gray-500 hover:text-gray-800 transition-colors"
+              >
+                Print
+              </button>
+            </div>
           </div>
 
           {/* Progress bar */}
@@ -341,7 +414,7 @@ export default function GoalDetailPage() {
           </div>
 
           {/* Question rows */}
-          <div className="flex flex-col gap-2">
+          <div className="no-print flex flex-col gap-2">
             {questions
               .slice()
               .sort((a, b) => a.question_order - b.question_order)
@@ -379,7 +452,7 @@ export default function GoalDetailPage() {
           </div>
 
           {/* Add question */}
-          <div className="mt-3">
+          <div className="no-print mt-3">
             {addingQuestion ? (
               <input
                 ref={newQuestionRef}
@@ -440,6 +513,13 @@ export default function GoalDetailPage() {
             onClose={() => setModalQuestion(null)}
             onSaved={handleQuestionSaved}
           />
+        )}
+
+        {/* ── Toast ── */}
+        {successMessage && (
+          <div className="fixed bottom-6 right-6 z-50 rounded-md bg-gray-900 px-4 py-2 text-sm text-white shadow-lg">
+            {successMessage}
+          </div>
         )}
 
       </div>
