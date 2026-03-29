@@ -23,4 +23,8 @@ app.include_router(questions.router, prefix="/api")
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "phase": "0"}
+    return {
+        "status": "pre-deployment",
+        "phase": "4",
+        "description": "Phase 3 complete — production deployment in progress",
+    }

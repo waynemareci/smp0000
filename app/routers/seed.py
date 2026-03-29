@@ -1,10 +1,11 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from app.auth import get_current_user
 from scripts.day_zero import run_seed
 
 router = APIRouter()
 
 @router.post("/seed")
-def run_day_zero_seed():
+def run_day_zero_seed(current_user=Depends(get_current_user)):
     """
     Idempotent: runs the Day 0 seed against the configured DATABASE_URL.
     Uses ON CONFLICT DO NOTHING / DO UPDATE so safe to call repeatedly.
