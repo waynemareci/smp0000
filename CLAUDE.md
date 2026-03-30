@@ -31,7 +31,25 @@ dogfood use case — the SMP manages its own development from Day 0.
 - All tables have: id (uuid), created_at, updated_at (auto-trigger)
 - Decisions and ai_prompt_log are append-only (no updates, no deletes)
 
-### Current phase: Phase 4 — TBD
+### Current phase: Phase 5 — TBD
+
+### Phase 4 — Production deployment (complete)
+
+Completed when:
+- [x] requirements.txt stripped to SMP-only dependencies
+- [x] /api/seed decoupled from day_zero.py / psycopg2 (disabled, returns 410)
+- [x] Railway backend deployed and healthy (/health verified)
+- [x] Vercel frontend deployed and reachable
+- [x] CLERK_JWKS_URL added to Railway environment variables
+- [x] Full stack smoke test passed
+- [x] AI log page created (/dashboard/ai-log)
+- [x] Session 1 wizard merged from 3 steps to 2 steps
+
+Phase 4 completed: 2026-03-30
+
+Post-deployment issues found and resolved:
+- AI log page was missing — created /dashboard/ai-log route
+- Session 1 steps 1+2 merged into single page (pure layout change)
 
 ### Phase 3 — Redesigned goal workflow (complete)
 
@@ -102,6 +120,14 @@ Smoke test passed. Issues found and resolved during testing:
     all other page content.
 21. Share questions uses navigator.clipboard.writeText with mailto:
     fallback — avoids dependency on a configured mail client.
+22. requirements.txt scoped to SMP-only dependencies — local env had
+    100+ packages including streamlit, selenium, PyAudio etc. that
+    caused Railway dependency resolution failure
+23. /api/seed disabled post-deployment (returns 410) — day_zero.py
+    used psycopg2 which is not in the Railway stack. Seed data already
+    present in Supabase.
+24. CLERK_JWKS_URL must be explicitly set in Railway environment —
+    omitting it causes 401 on all authenticated API calls.
 
 ### Architecture: two-session goal workflow
 
@@ -149,8 +175,3 @@ Active tracking — goal detail page (/dashboard/goals/[id]):
   Components:
     LogAnswerModal             — answer input + optional decision log
     LogDecisionModal           — general decision logging (active goals)
-
-### Known items before production deployment
-- /api/seed has no authentication — lock down before public deploy
-- /health reports "phase":"0" — update to current phase
-- Duplicate seed goals in database — clean up before Vercel deploy

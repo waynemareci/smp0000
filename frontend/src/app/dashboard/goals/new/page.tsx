@@ -10,7 +10,7 @@ import { apiFetch } from '@/lib/api'
 function StepDots({ current }: { current: number }) {
   return (
     <div className="flex items-center gap-2 mb-8">
-      {[1, 2, 3].map((n) => (
+      {[1, 2].map((n) => (
         <svg key={n} width="12" height="12" viewBox="0 0 12 12">
           {n < current ? (
             // Done — green filled
@@ -89,9 +89,9 @@ export default function NewGoalPage() {
     }
   }
 
-  // Fire AI call when arriving at step 3
+  // Fire AI call when arriving at step 2
   useEffect(() => {
-    if (step === 3) {
+    if (step === 2) {
       generateQuestions()
     }
   }, [step]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -215,26 +215,7 @@ export default function NewGoalPage() {
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-          </div>
 
-          <div className="mt-6">
-            <button
-              onClick={() => setStep(2)}
-              disabled={!title.trim() || !description.trim()}
-              className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              Next &#x2192;
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ── STEP 2 ── */}
-      {step === 2 && (
-        <div>
-          <h1 className="text-lg font-semibold text-gray-900 mb-6">Describe your goal</h1>
-
-          <div className="flex flex-col gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Describe the goal in your own words <span className="text-red-500">*</span>
@@ -242,7 +223,6 @@ export default function NewGoalPage() {
               <textarea
                 value={context}
                 onChange={(e) => setContext(e.target.value)}
-                autoFocus
                 placeholder={`What are you trying to achieve? What constraints exist?\nWhat does success look like?`}
                 rows={4}
                 style={{ minHeight: 80 }}
@@ -263,16 +243,10 @@ export default function NewGoalPage() {
             </div>
           </div>
 
-          <div className="mt-6 flex gap-3">
+          <div className="mt-6">
             <button
-              onClick={() => setStep(1)}
-              className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              &#x2190; Back
-            </button>
-            <button
-              onClick={() => setStep(3)}
-              disabled={context.trim().length < 20}
+              onClick={() => setStep(2)}
+              disabled={!title.trim() || !description.trim() || context.trim().length < 20}
               className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Next: generate agenda &#x2192;
@@ -281,8 +255,8 @@ export default function NewGoalPage() {
         </div>
       )}
 
-      {/* ── STEP 3 ── */}
-      {step === 3 && (
+      {/* ── STEP 2 ── */}
+      {step === 2 && (
         <div>
           <h1 className="text-lg font-semibold text-gray-900 mb-1">Research questions</h1>
           <p className="text-sm text-gray-500 mb-6">
@@ -383,11 +357,11 @@ export default function NewGoalPage() {
 
           <div className="mt-6 flex gap-3">
             <button
-              onClick={() => setStep(2)}
+              onClick={() => setStep(1)}
               disabled={saving}
               className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-40"
             >
-              &#x2190; Edit description
+              &#x2190; Back
             </button>
             <button
               onClick={() => handleSave(false)}
