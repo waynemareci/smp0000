@@ -106,7 +106,7 @@ export default function AILogPage() {
                 onClick={() => toggleExpanded(entry.id)}
                 className="self-start text-xs text-blue-600 hover:text-blue-800 transition-colors"
               >
-                {expanded[entry.id] ? 'Hide' : 'Show'} prompt &amp; response
+                {expanded[entry.id] ? 'Hide' : 'Show'} &nbsp;prompt &amp; response
               </button>
 
               {expanded[entry.id] && (

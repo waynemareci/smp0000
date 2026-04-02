@@ -96,6 +96,14 @@ export default function NewGoalPage() {
     }
   }, [step]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Resize all textareas when questions load
+  useEffect(() => {
+    document.querySelectorAll('textarea').forEach((el) => {
+      el.style.height = 'auto'
+      el.style.height = el.scrollHeight + 'px'
+    })
+  }, [questions])
+
   // ── Question list helpers ─────────────────────────────────────────────────
 
   function updateQuestion(index: number, value: string) {
@@ -323,11 +331,22 @@ export default function NewGoalPage() {
                   </div>
 
                   {/* Text input */}
-                  <input
-                    type="text"
+                  <textarea
                     value={q}
                     onChange={(e) => updateQuestion(i, e.target.value)}
-                    className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows={2}
+                    className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none overflow-hidden"
+                    style={{ minHeight: '2.5rem' }}
+                    onInput={(e) => {
+                      const el = e.currentTarget
+                      el.style.height = 'auto'
+                      el.style.height = el.scrollHeight + 'px'
+                    }}
+                    onFocus={(e) => {
+                      const el = e.currentTarget
+                      el.style.height = 'auto'
+                      el.style.height = el.scrollHeight + 'px'
+                    }}
                   />
 
                   {/* Delete */}

@@ -7,7 +7,10 @@ app = FastAPI(title="SMP API", version="0.0.1")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # TODO: lock down in Phase 2 when frontend domain is known
+    allow_origins=[
+        "https://smp0000.vercel.app",
+        "http://localhost:3000",
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -20,6 +23,7 @@ app.include_router(ai_log.router, prefix="/api")
 app.include_router(webhooks.router)
 app.include_router(ai_decompose.router, prefix="/api")
 app.include_router(questions.router, prefix="/api")
+
 
 @app.get("/health")
 def health():
